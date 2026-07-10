@@ -89,10 +89,17 @@ export default function ProfilePage() {
             </div>
             <button
               onClick={() => router.push('/profile/edit')}
+
               style={{ background: '#6366F1', color: '#FFFFFF', border: 'none', padding: '10px 22px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', flexShrink: 0, boxShadow: '0 4px 14px rgba(99,102,241,0.35)' }}
             >
               ✏️ Edit Profile
             </button>
+            <a
+              href="/projects"
+              style={{ display: 'block', textAlign: 'center', marginTop: '1px', background: 'transparent', color: '#818CF8', border: '1px solid #2A3A52', padding: '10px 22px', borderRadius: '10px', fontSize: '13px', fontWeight: 600, textDecoration: 'none' }}
+            >
+              🚀 My Projects
+            </a>
           </div>
           <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #1A2840', color: '#94A3B8', fontSize: '14px', lineHeight: 1.75 }}>
             {profile?.bio ?? 'No bio added yet. Click Edit Profile to add one.'}
