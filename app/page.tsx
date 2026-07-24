@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { User } from '@supabase/supabase-js'
+import Navbar from './components/Navbar'
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null)
@@ -32,24 +33,23 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
-      <nav className="border-b border-gray-800 px-6 py-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold">Dev<span className="text-indigo-500">Connect</span></h1>
-        <div className="flex gap-3">
-          {user ? (
-            <>
-              <span className="text-gray-400 text-sm self-center">{user.email}</span>
-              <button onClick={handleLogout} className="text-sm bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg transition">
-                Log out
-              </button>
-            </>
-          ) : (
-            <>
-              <a href="/login" className="text-sm bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg transition">Log in</a>
-              <a href="/signup" className="text-sm bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg transition">Sign up</a>
-            </>
-          )}
-        </div>
-      </nav>
+     <Navbar
+  rightContent={
+    user ? (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <span style={{ color: '#64748B', fontSize: '13px' }}>{user.email}</span>
+        <button onClick={handleLogout} style={{ fontSize: '13px', background: 'transparent', color: '#94A3B8', border: '1px solid #2A3A52', padding: '7px 16px', borderRadius: '8px', cursor: 'pointer' }}>
+          Log out
+        </button>
+      </div>
+    ) : (
+      <div style={{ display: 'flex', gap: '12px' }}>
+        <a href="/login" style={{ fontSize: '13px', background: 'transparent', color: '#94A3B8', border: '1px solid #2A3A52', padding: '7px 16px', borderRadius: '8px', textDecoration: 'none' }}>Log in</a>
+        <a href="/signup" style={{ fontSize: '13px', background: '#6366F1', color: 'white', padding: '7px 16px', borderRadius: '8px', textDecoration: 'none', fontWeight: 600 }}>Sign up</a>
+      </div>
+    )
+  }
+/>
 
       <div className="flex flex-col items-center justify-center text-center px-4 py-32">
         <h2 className="text-5xl font-bold mb-4">

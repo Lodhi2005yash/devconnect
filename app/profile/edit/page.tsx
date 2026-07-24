@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../../lib/supabaseClient'
 import { User } from '@supabase/supabase-js'
+import Navbar from '../../components/Navbar'
 
 interface Profile {
   id: string
@@ -121,17 +122,7 @@ export default function EditProfilePage() {
     <div style={{ minHeight: '100vh', background: '#060B18', color: '#F8FAFC', fontFamily: '-apple-system, Inter, BlinkMacSystemFont, sans-serif' }}>
 
       {/* Navbar */}
-      <nav style={{ borderBottom: '1px solid #1E2D45', padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#0A1628', position: 'sticky', top: 0, zIndex: 10 }}>
-        <a href="/" style={{ fontSize: '22px', fontWeight: 800, color: '#FFFFFF', textDecoration: 'none' }}>
-          Dev<span style={{ color: '#818CF8' }}>Connect</span>
-        </a>
-        <button
-          onClick={() => router.push('/profile')}
-          style={{ fontSize: '13px', background: 'transparent', color: '#94A3B8', border: '1px solid #2A3A52', padding: '7px 16px', borderRadius: '8px', cursor: 'pointer' }}
-        >
-          ← Back to Profile
-        </button>
-      </nav>
+     <Navbar backHref="/profile" backLabel="Back to Profile" />
 
       <div style={{ maxWidth: '640px', margin: '0 auto', padding: '40px 24px' }}>
         <h2 style={{ fontSize: '22px', fontWeight: 700, marginBottom: '28px', color: '#FFFFFF' }}>Edit Profile</h2>

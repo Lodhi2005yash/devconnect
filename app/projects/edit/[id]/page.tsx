@@ -1,13 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { supabase } from '../../../lib/supabaseClient'
-import { User } from '@supabase/supabase-js'
-import Navbar from '../../components/Navbar'
+import { useRouter, useParams } from 'next/navigation'
+import { supabase } from '../../../../lib/supabaseClient'
+import Navbar from '../../../components/Navbar'
 
-export default function AddProjectPage() {
-  const [user, setUser] = useState<User | null>(null)
+export default function EditProjectPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
@@ -20,40 +18,52 @@ export default function AddProjectPage() {
     tech_stack: [] as string[]
   })
   const router = useRouter()
+  const params = useParams()
+  const projectId = params.id as string
 
   useEffect(() => {
-    const getUser = async () => {
+    const getProject = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { router.push('/login'); return }
-      setUser(session.user)
+
+      const { data } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('id', projectId)
+        .single()
+
+      if (data) setForm({
+        title: data.title ?? '',
+        description: data.description ?? '',
+        github_url: data.github_url ?? '',
+        live_url: data.live_url ?? '',
+        tech_stack: data.tech_stack ?? []
+      })
       setLoading(false)
     }
-    getUser()
+    getProject()
   }, [])
 
   const handleSave = async () => {
-    if (!form.title.trim()) {
-      setMessage('Title zaroori hai!')
-      return
-    }
+    if (!form.title.trim()) { setMessage('Title zaroori hai!'); return }
     setSaving(true)
     setMessage('')
 
     const { error } = await supabase
       .from('projects')
-      .insert({
-        user_id: user?.id,
+      .update({
         title: form.title,
         description: form.description,
         github_url: form.github_url,
         live_url: form.live_url,
         tech_stack: form.tech_stack
       })
+      .eq('id', projectId)
 
     if (error) {
       setMessage(error.message)
     } else {
-      setMessage('Project added successfully! ✅')
+      setMessage('Project updated successfully! ✅')
       setTimeout(() => router.push('/projects'), 1500)
     }
     setSaving(false)
@@ -105,60 +115,35 @@ export default function AddProjectPage() {
     <div style={{ minHeight: '100vh', background: '#060B18', color: '#F8FAFC', fontFamily: '-apple-system, Inter, BlinkMacSystemFont, sans-serif' }}>
 
       {/* Navbar */}
-    <Navbar backHref="/projects" backLabel="Back to Projects" />
+     <Navbar backHref="/projects" backLabel="Back to Projects" />
 
       <div style={{ maxWidth: '640px', margin: '0 auto', padding: '40px 24px' }}>
         <h2 style={{ fontSize: '22px', fontWeight: 700, marginBottom: '28px', color: '#FFFFFF' }}>
-          Add New Project
+          Edit Project
         </h2>
 
         <div style={{ background: '#0F1C2E', border: '1px solid #1E2D45', borderRadius: '20px', padding: '36px', display: 'flex', flexDirection: 'column', gap: '22px' }}>
 
-          {/* Title */}
           <div>
             <label style={labelStyle}>Project Title *</label>
-            <input
-              style={inputStyle}
-              placeholder="e.g. DevConnect"
-              value={form.title}
-              onChange={e => setForm({ ...form, title: e.target.value })}
-            />
+            <input style={inputStyle} placeholder="e.g. DevConnect" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
           </div>
 
-          {/* Description */}
           <div>
             <label style={labelStyle}>Description</label>
-            <textarea
-              style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }}
-              placeholder="Project ke baare mein batao..."
-              value={form.description}
-              onChange={e => setForm({ ...form, description: e.target.value })}
-            />
+            <textarea style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }} placeholder="Project ke baare mein batao..." value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
           </div>
 
-          {/* GitHub URL */}
           <div>
             <label style={labelStyle}>GitHub URL</label>
-            <input
-              style={inputStyle}
-              placeholder="https://github.com/username/repo"
-              value={form.github_url}
-              onChange={e => setForm({ ...form, github_url: e.target.value })}
-            />
+            <input style={inputStyle} placeholder="https://github.com/username/repo" value={form.github_url} onChange={e => setForm({ ...form, github_url: e.target.value })} />
           </div>
 
-          {/* Live URL */}
           <div>
             <label style={labelStyle}>Live Demo URL</label>
-            <input
-              style={inputStyle}
-              placeholder="https://myproject.vercel.app"
-              value={form.live_url}
-              onChange={e => setForm({ ...form, live_url: e.target.value })}
-            />
+            <input style={inputStyle} placeholder="https://myproject.vercel.app" value={form.live_url} onChange={e => setForm({ ...form, live_url: e.target.value })} />
           </div>
 
-          {/* Tech Stack */}
           <div>
             <label style={labelStyle}>Tech Stack</label>
             <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
@@ -169,10 +154,7 @@ export default function AddProjectPage() {
                 onChange={e => setTechInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && addTech()}
               />
-              <button
-                onClick={addTech}
-                style={{ background: '#6366F1', color: 'white', border: 'none', padding: '11px 18px', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}
-              >
+              <button onClick={addTech} style={{ background: '#6366F1', color: 'white', border: 'none', padding: '11px 18px', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}>
                 Add
               </button>
             </div>
@@ -186,13 +168,12 @@ export default function AddProjectPage() {
             </div>
           </div>
 
-          {/* Save Button */}
           <button
             onClick={handleSave}
             disabled={saving}
             style={{ background: '#6366F1', color: 'white', border: 'none', padding: '13px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 14px rgba(99,102,241,0.35)', opacity: saving ? 0.7 : 1 }}
           >
-            {saving ? 'Saving...' : 'Add Project'}
+            {saving ? 'Saving...' : 'Save Changes'}
           </button>
 
           {message && (
@@ -205,4 +186,4 @@ export default function AddProjectPage() {
       </div>
     </div>
   )
-}   
+}

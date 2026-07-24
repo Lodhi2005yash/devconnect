@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+
 import { supabase } from '../../lib/supabaseClient'
 import { User } from '@supabase/supabase-js'
+import Navbar from '../components/Navbar'
 
 interface Project {
   id: string
@@ -19,6 +21,7 @@ export default function ProjectsPage() {
   const [user, setUser] = useState<User | null>(null)
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -39,6 +42,22 @@ export default function ProjectsPage() {
     getData()
   }, [])
 
+  const handleDelete = async (id: string) => {
+    const confirm = window.confirm('Are you sure you want to delete this project?')
+    if (!confirm) return
+
+    setDeletingId(id)
+    const { error } = await supabase
+      .from('projects')
+      .delete()
+      .eq('id', id)
+
+    if (!error) {
+      setProjects(projects.filter(p => p.id !== id))
+    }
+    setDeletingId(null)
+  }
+
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: '#060B18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -51,28 +70,23 @@ export default function ProjectsPage() {
     <div style={{ minHeight: '100vh', background: '#060B18', color: '#F8FAFC', fontFamily: '-apple-system, Inter, BlinkMacSystemFont, sans-serif' }}>
 
       {/* Navbar */}
-      <nav style={{ borderBottom: '1px solid #1E2D45', padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#0A1628', position: 'sticky', top: 0, zIndex: 10 }}>
-        <a href="/" style={{ fontSize: '22px', fontWeight: 800, color: '#FFFFFF', textDecoration: 'none' }}>
-          Dev<span style={{ color: '#818CF8' }}>Connect</span>
-        </a>
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <a href="/profile" style={{ fontSize: '13px', background: 'transparent', color: '#94A3B8', border: '1px solid #2A3A52', padding: '7px 16px', borderRadius: '8px', textDecoration: 'none' }}>
-            Profile
-          </a>
-          <a href="/projects/add" style={{ fontSize: '13px', background: '#6366F1', color: 'white', border: 'none', padding: '7px 16px', borderRadius: '8px', textDecoration: 'none', fontWeight: 600 }}>
-            + Add Project
-          </a>
-        </div>
-      </nav>
+     <Navbar
+  rightContent={
+    <div style={{ display: 'flex', gap: '12px' }}>
+      <a href="/profile" style={{ fontSize: '13px', background: 'transparent', color: '#94A3B8', border: '1px solid #2A3A52', padding: '7px 16px', borderRadius: '8px', textDecoration: 'none' }}>Profile</a>
+      <a href="/projects/add" style={{ fontSize: '13px', background: '#6366F1', color: 'white', padding: '7px 16px', borderRadius: '8px', textDecoration: 'none', fontWeight: 600 }}>+ Add Project</a>
+    </div>
+  }
+/>
 
       <div style={{ maxWidth: '860px', margin: '0 auto', padding: '40px 24px' }}>
 
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px' }}>
-          <div>
-            <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#FFFFFF' }}>My Projects</h2>
-            <p style={{ color: '#4A5568', fontSize: '13px', marginTop: '4px' }}>{projects.length} project{projects.length !== 1 ? 's' : ''} total</p>
-          </div>
+        <div style={{ marginBottom: '28px' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#FFFFFF' }}>My Projects</h2>
+          <p style={{ color: '#4A5568', fontSize: '13px', marginTop: '4px' }}>
+            {projects.length} project{projects.length !== 1 ? 's' : ''} total
+          </p>
         </div>
 
         {/* Empty State */}
@@ -86,13 +100,29 @@ export default function ProjectsPage() {
             </a>
           </div>
         ) : (
-          /* Projects Grid */
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: '16px' }}>
             {projects.map(project => (
               <div key={project.id} style={{ background: '#0F1C2E', border: '1px solid #1E2D45', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
 
-                {/* Title */}
-                <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#FFFFFF' }}>{project.title}</h3>
+                {/* Title + Action Buttons */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#FFFFFF' }}>{project.title}</h3>
+                  <div style={{ display: 'flex', gap: '8px', flexShrink: 0, marginLeft: '10px' }}>
+                    <button
+                      onClick={() => router.push(`/projects/edit/${project.id}`)}
+                      style={{ fontSize: '11px', padding: '5px 12px', borderRadius: '8px', background: 'rgba(99,102,241,0.1)', color: '#818CF8', border: '1px solid rgba(99,102,241,0.2)', cursor: 'pointer' }}
+                    >
+                      ✏️ Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(project.id)}
+                      disabled={deletingId === project.id}
+                      style={{ fontSize: '11px', padding: '5px 12px', borderRadius: '8px', background: 'rgba(248,113,113,0.1)', color: '#F87171', border: '1px solid rgba(248,113,113,0.2)', cursor: 'pointer', opacity: deletingId === project.id ? 0.5 : 1 }}
+                    >
+                      {deletingId === project.id ? '...' : '🗑️ Delete'}
+                    </button>
+                  </div>
+                </div>
 
                 {/* Description */}
                 {project.description && (
